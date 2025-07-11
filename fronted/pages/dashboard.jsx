@@ -1,266 +1,173 @@
-import { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity, Pressable, Alert, ScrollView } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import { Col, Row, Grid } from "react-native-easy-grid";
-import {
-  createStaticNavigation,
-  useNavigation,
-} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
+import { useEffect, useState } from 'react';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-export default function Dashboard (){
+export default function Dashboard() {
     const navigation = useNavigation();
+    const [data, setData] = useState([]);
+    const [total, setTotal] = useState(0);
 
-    const [data, setData] = useState([])
-    const [total, setTotal] = useState(0)
-    
     useEffect(() => {
-        getExpenses()
+        getExpenses();
     }, []);
-    
+
     const getExpenses = async () => {
         try {
-            const res = await axios.get("https://vxx28nqw-5000.usw3.devtunnels.ms/expenses/get_all")
-            const expenses = res.data
-            setData(expenses)
-            getTotal(expenses)
-            
+            const res = await axios.get("https://kh0tkmpw-5000.usw3.devtunnels.ms/expenses/get_all");
+            const expenses = res.data;
+            setData(expenses);
+            getTotal(expenses);
         } catch (error) {
-            console.log("Error al buscar los gastos ", error)
+            console.log("Error al buscar los gastos ", error);
         }
-    }
-    const getDate = ()=>{
+    };
+
+    const getDate = () => {
         const currentDate = new Date();
         return {
-            year: year = currentDate.getFullYear(),
-            month: month = currentDate.getMonth() + 1 ,
-            day: day = currentDate.getDate()
-        }
-    }
+            year: currentDate.getFullYear(),
+            month: currentDate.getMonth() + 1,
+            day: currentDate.getDate()
+        };
+    };
 
-    const getTotal = (expenses)=>{
-        const today = getDate()
-        let subtotal = 0
-            for (const expense of expenses){
-                const [year, month] = expense.date.split("/");
-                console.log(today.month, month)
-                if (parseInt(today.year) == parseInt(year) && parseInt(today.month) == parseInt(month)){
-                    subtotal += expense.amount
-                }
+    const getTotal = (expenses) => {
+        const today = getDate();
+        let subtotal = 0;
+        for (const expense of expenses) {
+            const [year, month] = expense.date.split("/");
+            if (parseInt(today.year) === parseInt(year) && parseInt(today.month) === parseInt(month)) {
+                subtotal += expense.amount;
             }
-        setTotal(subtotal)
-    }
+        }
+        setTotal(subtotal);
+    };
 
     const deleteClient = async (id) => {
         try {
-            await axios.delete(`https://vxx28nqw-5000.usw3.devtunnels.ms/expenses/delete/${id}`)
-         
-            const empty = data.filter(expense => expense.id !== id);
-            setData(empty);
-            getTotal(empty)
+            await axios.delete(`https://kh0tkmpw-5000.usw3.devtunnels.ms/expenses/delete/${id}`);
+            const filtered = data.filter(expense => expense.id !== id);
+            setData(filtered);
+            getTotal(filtered);
         } catch (error) {
-            console.log("Error al borrar gasto ", error)
+            console.log("Error al borrar gasto ", error);
         }
-    }
-
+    };
 
     return (
-            <View style={style.container}>
-                <View>
-                    <Text style={style.title}></Text>
-                    <Text style={style.title}>{total}</Text>
-                </View>
+        <View style={style.container}>
+            
 
-               <ScrollView style={style.table}>
-                 
-                <Grid>
-                    <Row style={style.rowHeader}>
-                    <Col><Text style={style.headerText}>Tipo</Text></Col>
-                    <Col><Text style={style.headerText}>Descripción</Text></Col>
-                    <Col><Text style={style.headerText}>Total</Text></Col>
-                    <Col><Text style={style.headerText}>Fecha</Text></Col>
-                    <Col><Text style={style.headerText}></Text></Col>
-                    </Row>
-                 
-                    {data.map((expense, i) => (
-                    <Row
-                        key={expense.id}
-                        style={[style.row, i % 2 === 0 && style.zebraRow]}
-                    >
-                        <Col><Text style={style.colText}>{expense.category}</Text></Col>
-                        <Col><Text style={style.colText}>{expense.description}</Text></Col>
-                        <Col><Text style={style.colText}>{expense.amount}</Text></Col>
-                        <Col><Text style={style.colText}>{expense.date}</Text></Col>
-                        <Col>
-                        <TouchableOpacity
-                            style={style.update}
-                            onPress={() => navigation.navigate("updateExpense", { expense })}
-                        >
-                            <Text style={{ color: "white", fontSize: 12 }}>Actualizar</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={style.delete}
-                            onPress={() => deleteClient(expense.id)}
-                        >
-                            <Text style={{ color: "white", fontSize: 12 }}>Eliminar</Text>
-                        </TouchableOpacity>
-                        </Col>
-                    </Row>
-                    ))}
-                </Grid>
-                </ScrollView>
-                <TouchableOpacity  onPress={()=>{navigation.navigate("createExpense")}}>
-                        <Text style={style.createButton}>Crear Orden</Text>
-                </TouchableOpacity>
-                <Image
-  source={{ uri: 'https://preview.redd.it/gangster-spongebob-holding-money-while-giving-a-thumbs-up-v0-jv3d8mb9f2mb1.jpg?width=640&crop=smart&auto=webp&s=a98226b6a9d7ef832b41acd3a4fe5051b0c13856' }}
-  style={{ width: 200, height: 200 }}
-/>
-            </View>
-    )
+            <ScrollView style={style.scroll}>
+                {data.map((expense) => (
+                    <View key={expense.id} style={style.card}>
+                        <Text style={style.cardText}>Tipo: {expense.category}</Text>
+                        <Text style={style.cardText}>Descripción: {expense.description}</Text>
+                        <Text style={style.cardText}>Monto: ${expense.amount}</Text>
+                        <Text style={style.cardText}>Fecha: {expense.date}</Text>
+
+                        <View style={style.buttonGroup}>
+                            <TouchableOpacity
+                                style={style.update}
+                                onPress={() => navigation.navigate("updateExpense", { expense })}
+                            >
+                                <Text style={style.buttonText}>Actualizar</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={style.delete}
+                                onPress={() => deleteClient(expense.id)}
+                            >
+                                <Text style={style.buttonText}>Eliminar</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                ))}
+            </ScrollView>
+
+            <TouchableOpacity onPress={() => navigation.navigate("createExpense")}>
+                <Text style={style.createButton}>Crear Gasto</Text>
+            </TouchableOpacity>
+
+            <Image
+                source={{
+                    uri: 'https://preview.redd.it/gangster-spongebob-holding-money-while-giving-a-thumbs-up-v0-jv3d8mb9f2mb1.jpg?width=640&crop=smart&auto=webp&s=a98226b6a9d7ef832b41acd3a4fe5051b0c13856',
+                }}
+                style={{ width: 200, height: 200, marginTop: 20 }}
+            />
+            <Text style={style.title}>${total}</Text>
+        </View>
+    );
 }
-
 
 const style = StyleSheet.create({
     container: {
         flex: 1,
         paddingTop: 50,
+        paddingHorizontal: 16,
         alignItems: "center",
-        backgroundColor: "#ffffffff"
+        backgroundColor: "#fff",
     },
 
     title: {
-        fontSize: 36,
+        fontSize: 28,
         fontWeight: "bold",
-        color: "white",
         marginBottom: 20,
+        textAlign: "center",
+        color: "#333"
     },
 
-    createButton: {
-        backgroundColor: "#ffffff",
-        color: "#000000ff",
-        borderRadius: 50,
-        fontSize: 40,
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        marginBottom: 20,
-        elevation: 3,
-        alignSelf: 'flex-end'
-    },
-
-    search: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: 20,
-        paddingHorizontal: 10,
-        width: "95%",
-        gap: 10
-    },
-
-    searchBar: {
-        flex: 1,
-        backgroundColor: "white",
-        borderRadius: 8,
-        paddingHorizontal: 10,
-        height: 40,
-        elevation: 2,
-    },
-
-    searchButton: {
-        backgroundColor: "#ffffff",
-        padding: 10,
-        borderRadius: 8,
-        elevation: 2,
-    },
-
-    select: {
-        backgroundColor: "#ffffff",
-        height: 40,
-        borderRadius: 8,
-        paddingHorizontal: 10,
-        borderWidth: 1,
-        borderColor: "#ccc"
-    }, 
-
-    name: {
-        fontSize: 15,
-        fontWeight: "bold",
-        marginVertical: 5,
-    },
-
-    button: {
-        backgroundColor: "#ffffffff",
+    scroll: {
         width: "100%",
-        padding: 12,
+    },
+
+    card: {
+        backgroundColor: "#f2f2f2",
         borderRadius: 10,
-        alignItems: "center",
+        padding: 16,
+        marginBottom: 15,
+        elevation: 3,
+    },
+
+    cardText: {
+        fontSize: 16,
+        marginBottom: 5,
+        color: "#444"
+    },
+
+    buttonGroup: {
+        flexDirection: "row",
+        justifyContent: "space-between",
         marginTop: 10,
     },
 
-    input: {
+    update: {
+        backgroundColor: "green",
+        padding: 8,
         borderRadius: 5,
-        fontSize: 15,
-        borderColor: "#aaa",
-        borderWidth: 1,
-        textAlign: "center",
-        width: "100%",
-        padding: 10,
     },
-    
-  table: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 5,
-    marginTop: 20,
-    width: "95%",
-    alignSelf: "center",
-    elevation: 3,
-  },
 
-  rowHeader: {
-    backgroundColor: "#ffffffff",
-    paddingVertical: 10,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-  },
+    delete: {
+        backgroundColor: "red",
+        padding: 8,
+        borderRadius: 5,
+    },
 
-  row: {
-    flexDirection: "row",
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderColor: "#e0e0e0",
-    alignItems: "center",
-  },
+    buttonText: {
+        color: "#fff",
+        fontSize: 14,
+        textAlign: "center",
+    },
 
-  zebraRow: {
-    backgroundColor: "#f9f9f9",
-  },
-
-  colText: {
-    color: "#333",
-    fontSize: 13,
-    textAlign: "center",
-  },
-
-  headerText: {
-    color: "black",
-    fontWeight: "bold",
-    textAlign: "center",
-    fontSize: 14,
-  },
-
-  update: {
-    backgroundColor: "green",
-    padding: 5,
-    borderRadius: 5,
-    marginBottom: 4,
-    alignItems: "center",
-  },
-
-  delete: {
-    backgroundColor: "purple",
-    padding: 5,
-    borderRadius: 5,
-    alignItems: "center",
-  },
+    createButton: {
+        backgroundColor: "#000",
+        color: "#fff",
+        borderRadius: 30,
+        fontSize: 20,
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+        marginTop: 20,
+        textAlign: "center"
+    },
 });

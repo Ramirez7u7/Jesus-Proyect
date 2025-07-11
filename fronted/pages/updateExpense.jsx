@@ -23,7 +23,7 @@ export default function UpdateExpense (){
 
     const updateExpense = async () => {
         try {
-            await axios.put(`https://vxx28nqw-5000.usw3.devtunnels.ms/expenses/update/${expense.id}`, data)
+            await axios.put(`https://kh0tkmpw-5000.usw3.devtunnels.ms/expenses/update/${expense.id}`, data)
 
             navigation.navigate("dashboard")
         } catch (error) {

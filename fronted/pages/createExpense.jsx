@@ -16,7 +16,7 @@ export default function Create() {
 
     const onSubmit = async ()=>{
         try {
-            await axios.post("https://vxx28nqw-5000.usw3.devtunnels.ms/expenses/create", data)
+            await axios.post("https://kh0tkmpw-5000.usw3.devtunnels.ms/expenses/create", data)
        
             navigation.navigate("dashboard")
         } catch (error) {
